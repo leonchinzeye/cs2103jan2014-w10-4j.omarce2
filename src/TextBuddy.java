@@ -58,7 +58,6 @@ public class TextBuddy {
 			checkValidArgument(args);
 			openFile(args);
 			System.out.println(String.format(WELCOME_MESSAGE, fileName));
-		
 			System.out.printf(COMMAND_PROMPT);
 			String command = reader.nextLine();		
 			String response = executeCommand(command);
