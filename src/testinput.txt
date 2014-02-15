@@ -1,0 +1,29 @@
+clear
+display
+add hello
+add is it me
+add you're looking for
+delete 2
+display
+add balrog of morgoth
+display
+add smaug
+add     
+tom bombadil
+clear
+delete 2
+add try
+add and try again
+delete k
+delete -100
+add
+delete
+delete 4567
+delete 1
+display
+clear
+display
+add I shot the sheriff
+add but I did not shoot the deputy
+display
+exit

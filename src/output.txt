@@ -1,0 +1,34 @@
+Welcome to TextBuddy. mytext.txt is ready for use
+Command: All content deleted from mytext.txt
+Command: mytext.txt is empty.
+Command: Added to mytext.txt: "hello"
+Command: Added to mytext.txt: "is it me"
+Command: Added to mytext.txt: "you're looking for"
+Command: Deleted from mytext.txt: "is it me"
+Command: 1. hello
+2. you're looking for
+Command: Added to mytext.txt: "balrog of morgoth"
+Command: 1. hello
+2. you're looking for
+3. balrog of morgoth
+Command: Added to mytext.txt: "smaug"
+Command: Invalid Argument!
+Command: Command not recognised! Please re-enter command.
+Command: All content deleted from mytext.txt
+Command: There is nothing to delete!
+Command: Added to mytext.txt: "try"
+Command: Added to mytext.txt: "and try again"
+Command: Please enter a number.
+Command: Invalid Argument!
+Command: Invalid Argument!
+Command: Invalid Argument!
+Command: There is nothing to delete!
+Command: Deleted from mytext.txt: "try"
+Command: 1. and try again
+Command: All content deleted from mytext.txt
+Command: mytext.txt is empty.
+Command: Added to mytext.txt: "I shot the sheriff"
+Command: Added to mytext.txt: "but I did not shoot the deputy"
+Command: 1. I shot the sheriff
+2. but I did not shoot the deputy
+Command: 
