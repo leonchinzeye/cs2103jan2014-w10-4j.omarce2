@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -32,13 +33,15 @@ public class TextBuddy {
 	private static final String MESSAGE_DELETED = "Deleted from %s: \"%s\"";
 	private static final String MESSAGE_EMPTY_FILE = "%s is empty.";
 	private static final String MESSAGE_NOTHING_TO_DELETE = "There is nothing to delete!";
+	private static final String MESSAGE_SORTED = "%s is sorted.";
+	private static final String MESSAGE_FAIL_SEARCH = "Can't find \"%s\" in file.";
+	private static final String MESSAGE_SUCCESS_SEARCH = "Found \"%s\" in the lines:\n";
 	
 	private static final int MIN_ARG_LENGTH = 1;
-	private static final int SPLIT_ARRAY_SIZE = 2;
+	private static final int SPLIT_INTO_TWO = 2;
 	private static final int ACTUAL_STRING_CONTENT = 1;
 	private static final int ACTUAL_COMMAND = 0;
 	private static final int INVALID_ARG_LENGTH = 1;
-	
 	
 	//These are the possible command types
 	enum COMMAND_TYPE {
@@ -91,7 +94,7 @@ public class TextBuddy {
 			try {
 				BufferedReader buffReader = new BufferedReader(new FileReader(textFile));
 				while((lineRead = buffReader.readLine()) != null) {
-					String[] lineReadArray = lineRead.split(" ", SPLIT_ARRAY_SIZE);
+					String[] lineReadArray = lineRead.split(" ", SPLIT_INTO_TWO);
 					entries.add(lineReadArray[ACTUAL_STRING_CONTENT]);
 				}
 				buffReader.close();
@@ -107,28 +110,29 @@ public class TextBuddy {
 	 * This method takes the user input and decides which command to execute.
 	 * 
 	 * @param reader
-	 * @param command_argument
+	 * @param cmd_full
 	 * @return
 	 */
-	private static String executeCommand(String command_argument) {
-		String[] cmd = command_argument.split(" ", SPLIT_ARRAY_SIZE);
+	public static String executeCommand(String cmd_full) {
+		String[] cmd = cmd_full.split(" ", SPLIT_INTO_TWO);
+		String cmd_arg = cmd[1];
 		String commandTypeString = cmd[ACTUAL_COMMAND];
 
 		COMMAND_TYPE commandType = determineCommandType(commandTypeString);
 			
 		switch(commandType) {
 			case ADD:
-				return add(command_argument);
+				return add(cmd_arg);
 			case DISPLAY:
 				return display();
 			case CLEAR:
 				return clear();
 			case DELETE:
-				return delete(command_argument);
+				return delete(cmd_arg);
 			case SORT:
-				System.out.println("Sort Command not implemented yet.");
+				return sort();
 			case SEARCH:
-				System.out.println("Search Command not implemented yet.");
+				return search(cmd_arg);
 			case INVALID:
 				return String.format(MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n");
 			case EXIT:
@@ -166,11 +170,10 @@ public class TextBuddy {
 		if ((line.length == INVALID_ARG_LENGTH) || (line[ACTUAL_STRING_CONTENT].equals(""))) {
 			return MESSAGE_INVALID_ARGUMENT;
 		} else {
-			line = cmd.split(" ", SPLIT_ARRAY_SIZE);
-			entries.add(line[1]);
+			entries.add(cmd);
 			writeToFile();
 		}
-		return String.format(MESSAGE_ADDED, fileName, line[ACTUAL_STRING_CONTENT]);
+		return String.format(MESSAGE_ADDED, fileName, cmd);
 	}
 
 	/**
@@ -218,34 +221,68 @@ public class TextBuddy {
 	 * Otherwise, the command will delete the line as requested.
 	 * @param lineNo is the argument entered by the user, i.e. the line he wishes to delete.
 	 */
-	private static String delete(String cmd) {
+	private static String delete(String lineNo) {
 		boolean notDigit = false;
 		int deleteLineNo = 0;
 		String lineToDelete;
-		
-		String[] lineNo = cmd.split(" ");
-		if (lineNo.length == INVALID_ARG_LENGTH) {
+
+		try {
+			deleteLineNo = Integer.parseInt(lineNo);
+		} catch(Exception ex) {
+			notDigit = true;
+		}
+	
+		if (notDigit) {
+			return MESSAGE_ERROR_NOT_NUMBER;
+		} else if (deleteLineNo > entries.size()) {
+			return MESSAGE_NOTHING_TO_DELETE;
+		} else if (deleteLineNo <= 0) {
 			return MESSAGE_INVALID_ARGUMENT;
 		} else {
-			try {
-				deleteLineNo = Integer.parseInt(lineNo[ACTUAL_STRING_CONTENT]);
-			} catch(Exception ex) {
-				notDigit = true;
-			}
-		
-			if (notDigit) {
-				return MESSAGE_ERROR_NOT_NUMBER;
-			} else if (deleteLineNo > entries.size()) {
-				return MESSAGE_NOTHING_TO_DELETE;
-			} else if (deleteLineNo <= 0) {
-				return MESSAGE_INVALID_ARGUMENT;
-			} else {
-				lineToDelete = entries.get(deleteLineNo - 1);
-				entries.remove(deleteLineNo - 1);
-				writeToFile();
-			}
+			lineToDelete = entries.get(deleteLineNo - 1);
+			entries.remove(deleteLineNo - 1);
+			writeToFile();
 		}
 		return String.format(MESSAGE_DELETED, fileName, lineToDelete);
+	}
+	
+	private static String sort() {
+		if (textFile.exists()) {
+			if (entries.isEmpty()) {
+				return String.format(MESSAGE_EMPTY_FILE, fileName);
+			} else {
+				Collections.sort(entries);
+				writeToFile();
+				return String.format(MESSAGE_SORTED, fileName);
+			}
+		} else {
+			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
+		}
+	}
+	
+	private static String search(String query) {
+		boolean found = false;
+		
+		if (textFile.exists()) {
+			if (entries.isEmpty()) {
+				return String.format(MESSAGE_FAIL_SEARCH, fileName);
+			} else {
+				String foundInLine = searchThruLines(query);
+				return foundInLine;
+			}
+		} else {
+			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
+		}
+	}
+
+	private static String searchThruLines(String query) {
+		String foundInLine = String.format(MESSAGE_SUCCESS_SEARCH, query);		
+		for (int i = 0; i < entries.size(); i++) {
+			if (entries.get(i).contains(query)) {
+				foundInLine += (i + 1) + ". " + entries.get(i) + "\n";
+			}
+		}
+		return foundInLine;
 	}
 
 	/**
