@@ -53,7 +53,7 @@ public class TextBuddy {
 	private static ArrayList<String> entries = new ArrayList<String>();
 	
 	private static String fileName;
-	private static File textFile;
+	private static File textFile = null;
 	private static boolean firstTime = true;
 	
 	private static Scanner reader = new Scanner(System.in);
@@ -69,6 +69,7 @@ public class TextBuddy {
 			System.out.printf(COMMAND_PROMPT);
 			String command = reader.nextLine();
 			String response = executeCommand(command);
+			writeToFile();
 			output(response);
 		}
 	}
@@ -81,33 +82,6 @@ public class TextBuddy {
 		if (args.length != MIN_ARG_LENGTH) {
 			System.out.println(MESSAGE_INVALID_ARGUMENT);
 			System.exit(0);
-		}
-	}
-	
-	/**
-	 * This method checks if the file of the argument name exists. If it does, it will extract all lines of text
-	 * and store them in the ArrayList "entries".
-	 * Otherwise, it will create a new file of the same name.
-	 * 
-	 * @param args is the name of the text file the user wishes to access or create.
-	 */
-	private static void openFile(String[] args) {
-		textFile = new File(args[0]);
-		fileName = args[0];
-		String lineRead = null;
-		if (textFile.exists()) {
-			try {
-				BufferedReader buffReader = new BufferedReader(new FileReader(textFile));
-				while((lineRead = buffReader.readLine()) != null) {
-					String[] lineReadArray = lineRead.split(" ", SPLIT_INTO_TWO);
-					entries.add(lineReadArray[ACTUAL_STRING_CONTENT]);
-				}
-				buffReader.close();
-			} catch(IOException ex) {
-				System.out.println(String.format(MESSAGE_ERROR_READING_FILE, fileName));
-			}
-		} else {
-			textFile = new File(args[0]);
 		}
 	}
 
@@ -126,35 +100,48 @@ public class TextBuddy {
 			
 		switch(commandType) {
 			case ADD:
-				if (cmd.length == MISSING_ARG) {
-					return MESSAGE_INVALID_ARGUMENT;
-				}else {
-					return add(cmd[CMD_ARG]);
-				}
+				return executeAddCmd(cmd);
 			case DISPLAY:
 				return display();
 			case CLEAR:
 				return clear();
 			case DELETE:
-				if (cmd.length == MISSING_ARG) {
-					return MESSAGE_INVALID_ARGUMENT;
-				}else {
-					return delete(cmd[CMD_ARG]);
-				}
+				return executeDelCmd(cmd);
 			case SORT:
 				return sort();
 			case SEARCH:
-				if (cmd.length == MISSING_ARG) {
-					return MESSAGE_INVALID_ARGUMENT;
-				}else {
-					return search(cmd[CMD_ARG]);
-				}
+				return executeSearchCmd(cmd);
 			case INVALID:
 				return String.format(MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n");
 			case EXIT:
+				writeToFile();
 				System.exit(0);
 			default:
 				throw new Error("Unrecognized command type.");
+		}
+	}
+	
+	private static String executeAddCmd(String[] cmd) {
+		if (cmd.length == MISSING_ARG) {
+			return MESSAGE_INVALID_ARGUMENT;
+		}else {
+			return add(cmd[CMD_ARG]);
+		}
+	}
+	
+	private static String executeDelCmd(String[] cmd) {
+		if (cmd.length == MISSING_ARG) {
+			return MESSAGE_INVALID_ARGUMENT;
+		}else {
+			return delete(cmd[CMD_ARG]);
+		}
+	}
+	
+	private static String executeSearchCmd(String[] cmd) {
+		if (cmd.length == MISSING_ARG) {
+			return MESSAGE_INVALID_ARGUMENT;
+		}else {
+			return search(cmd[CMD_ARG]);
 		}
 	}
 
@@ -186,7 +173,6 @@ public class TextBuddy {
 			return MESSAGE_INVALID_ARGUMENT;
 		} else {
 			entries.add(cmd);
-			writeToFile();
 		}
 		return String.format(MESSAGE_ADDED, fileName, cmd);
 	}
@@ -196,14 +182,10 @@ public class TextBuddy {
 	 * If it does, it will execute as normal.
 	 */
 	private static String display() {
-		if (textFile.exists()) {
-			if (entries.isEmpty()) {
-				return String.format(MESSAGE_EMPTY_FILE, fileName);
-			} else {
-				return printDisplay();
-			}
-		} else{
-			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
+		if (entries.isEmpty()) {
+			return String.format(MESSAGE_EMPTY_FILE, fileName);
+		} else {
+			return printDisplay();
 		}
 	}
 
@@ -226,7 +208,6 @@ public class TextBuddy {
 	private static String clear() {
 		if (textFile.exists()) {
 			entries = new ArrayList<String>();
-			writeToFile();
 			return String.format(MESSAGE_CLEARED, fileName);
 		} else {
 			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
@@ -262,7 +243,6 @@ public class TextBuddy {
 		} else {
 			lineToDelete = entries.get(deleteLineNo - 1);
 			entries.remove(deleteLineNo - 1);
-			writeToFile();
 		}
 		return String.format(MESSAGE_DELETED, fileName, lineToDelete);
 	}
@@ -273,7 +253,6 @@ public class TextBuddy {
 				return String.format(MESSAGE_EMPTY_FILE, fileName);
 			} else {
 				Collections.sort(entries);
-				writeToFile();
 				return String.format(MESSAGE_SORTED, fileName);
 			}
 		} else {
@@ -308,7 +287,34 @@ public class TextBuddy {
 		}
 		return foundInLine;
 	}
-
+	
+	/**
+	 * This method checks if the file of the argument name exists. If it does, it will extract all lines of text
+	 * and store them in the ArrayList "entries".
+	 * Otherwise, it will create a new file of the same name.
+	 * 
+	 * @param args is the name of the text file the user wishes to access or create.
+	 */
+	public static void openFile(String[] args) {
+		textFile = new File(args[0]);
+		fileName = args[0];
+		String lineRead = null;
+		if (textFile.exists()) {
+			try {
+				BufferedReader buffReader = new BufferedReader(new FileReader(textFile));
+				while((lineRead = buffReader.readLine()) != null) {
+					String[] lineReadArray = lineRead.split(" ", SPLIT_INTO_TWO);
+					entries.add(lineReadArray[ACTUAL_STRING_CONTENT]);
+				}
+				buffReader.close();
+			} catch(IOException ex) {
+				System.out.println(String.format(MESSAGE_ERROR_READING_FILE, fileName));
+			}
+		} else {
+			textFile = new File(args[0]);
+		}
+	}
+	
 	/**
 	 * The following method saves all lines from ArrayList "entries"
 	 * into the text file.
