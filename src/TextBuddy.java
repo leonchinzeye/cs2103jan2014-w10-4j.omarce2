@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileReader;
@@ -24,7 +25,7 @@ public class TextBuddy {
 	private static final String MESSAGE_ERROR_UNRECOGNISABLE_COMMAND = "Command not recognised!"
 			+ " Please re-enter command.";
 	private static final String MESSAGE_ERROR_NOT_NUMBER = "Please enter a number.";
-	private static final String MESSAGE_ERROR_OPENING_FILE = "Unable to open file %s";
+	private static final String MESSAGE_ERROR_FINDING_FILE = "Unable to find file %s";
 	private static final String MESSAGE_ERROR_READING_FILE = "Error reading file %s";
 	private static final String MESSAGE_ERROR_WRITING_TO_FILE = "Error writing to file %s";
 	private static final String MESSAGE_INVALID_ARGUMENT = "Invalid Argument!";
@@ -69,11 +70,12 @@ public class TextBuddy {
 			System.out.printf(COMMAND_PROMPT);
 			String command = reader.nextLine();
 			String response = executeCommand(command);
+			writeToFile();
 			output(response);
 		}
 	}
 	
-	private static void output(String text) {
+	public static void output(String text) {
 		System.out.println(text);
 	}
 
@@ -101,22 +103,18 @@ public class TextBuddy {
 		switch(commandType) {
 			case ADD:
 				response = executeAddCmd(cmd);
-				writeToFile();
 				break;
 			case DISPLAY:
 				response = display();
 				break;
 			case CLEAR:
 				response = clear();
-				writeToFile();
 				break;
 			case DELETE:
 				response = executeDelCmd(cmd);
-				writeToFile();
 				break;
 			case SORT:
 				response = sort();
-				writeToFile();
 				break;
 			case SEARCH:
 				response = executeSearchCmd(cmd);
@@ -125,7 +123,6 @@ public class TextBuddy {
 				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n";
 				break;
 			case EXIT:
-				writeToFile();
 				System.exit(0);
 				break;
 			default:
@@ -161,7 +158,7 @@ public class TextBuddy {
 
 	private static COMMAND_TYPE determineCommandType(String commandTypeString) {
 		if (commandTypeString == null)
-			throw new Error("command type string cannot be null!");
+			throw new Error("Command type string cannot be null!");
 
 		if (commandTypeString.equalsIgnoreCase("add")) {
 			return COMMAND_TYPE.ADD;
@@ -309,9 +306,11 @@ public class TextBuddy {
 					entries.add(lineReadArray[ACTUAL_STRING_CONTENT]);
 				}
 				buffReader.close();
+			} catch(FileNotFoundException ex) {
+				System.out.println(String.format(MESSAGE_ERROR_FINDING_FILE, fileName));
 			} catch(IOException ex) {
 				System.out.println(String.format(MESSAGE_ERROR_READING_FILE, fileName));
-			}
+			} 
 		} else {
 			textFile = new File(args[0]);
 		}
