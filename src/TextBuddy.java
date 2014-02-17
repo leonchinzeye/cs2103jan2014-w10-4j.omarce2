@@ -69,7 +69,6 @@ public class TextBuddy {
 			System.out.printf(COMMAND_PROMPT);
 			String command = reader.nextLine();
 			String response = executeCommand(command);
-			writeToFile();
 			output(response);
 		}
 	}
@@ -93,6 +92,7 @@ public class TextBuddy {
 	 * @return
 	 */
 	public static String executeCommand(String cmd_full) {
+		String response = "";
 		String[] cmd = cmd_full.split(" ", SPLIT_INTO_TWO);
 		String commandTypeString = cmd[ACTUAL_COMMAND];
 
@@ -100,25 +100,39 @@ public class TextBuddy {
 			
 		switch(commandType) {
 			case ADD:
-				return executeAddCmd(cmd);
+				response = executeAddCmd(cmd);
+				writeToFile();
+				break;
 			case DISPLAY:
-				return display();
+				response = display();
+				break;
 			case CLEAR:
-				return clear();
+				response = clear();
+				writeToFile();
+				break;
 			case DELETE:
-				return executeDelCmd(cmd);
+				response = executeDelCmd(cmd);
+				writeToFile();
+				break;
 			case SORT:
-				return sort();
+				response = sort();
+				writeToFile();
+				break;
 			case SEARCH:
-				return executeSearchCmd(cmd);
+				response = executeSearchCmd(cmd);
+				break;
 			case INVALID:
-				return String.format(MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n");
+				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n";
+				break;
 			case EXIT:
 				writeToFile();
 				System.exit(0);
+				break;
 			default:
-				throw new Error("Unrecognized command type.");
+				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n";
+				break;
 		}
+		return response;
 	}
 	
 	private static String executeAddCmd(String[] cmd) {
