@@ -41,7 +41,8 @@ public class TextBuddy {
 	private static final int SPLIT_INTO_TWO = 2;
 	private static final int ACTUAL_STRING_CONTENT = 1;
 	private static final int ACTUAL_COMMAND = 0;
-	private static final int INVALID_ARG_LENGTH = 1;
+	private static final int CMD_ARG = 1;
+	private static final int MISSING_ARG = 1;
 	
 	//These are the possible command types
 	enum COMMAND_TYPE {
@@ -53,16 +54,20 @@ public class TextBuddy {
 	
 	private static String fileName;
 	private static File textFile;
+	private static boolean firstTime = true;
 	
 	private static Scanner reader = new Scanner(System.in);
 
 	public static void main(String[] args) throws IOException {
+		checkValidArgument(args);
+		openFile(args);
 		while (true) {
-			checkValidArgument(args);
-			openFile(args);
-			System.out.println(String.format(WELCOME_MESSAGE, fileName));
+			if (firstTime) {
+				System.out.println(String.format(WELCOME_MESSAGE, fileName));
+				firstTime = false;
+			}
 			System.out.printf(COMMAND_PROMPT);
-			String command = reader.nextLine();		
+			String command = reader.nextLine();
 			String response = executeCommand(command);
 			output(response);
 		}
@@ -115,24 +120,35 @@ public class TextBuddy {
 	 */
 	public static String executeCommand(String cmd_full) {
 		String[] cmd = cmd_full.split(" ", SPLIT_INTO_TWO);
-		String cmd_arg = cmd[1];
 		String commandTypeString = cmd[ACTUAL_COMMAND];
 
 		COMMAND_TYPE commandType = determineCommandType(commandTypeString);
 			
 		switch(commandType) {
 			case ADD:
-				return add(cmd_arg);
+				if (cmd.length == MISSING_ARG) {
+					return MESSAGE_INVALID_ARGUMENT;
+				}else {
+					return add(cmd[CMD_ARG]);
+				}
 			case DISPLAY:
 				return display();
 			case CLEAR:
 				return clear();
 			case DELETE:
-				return delete(cmd_arg);
+				if (cmd.length == MISSING_ARG) {
+					return MESSAGE_INVALID_ARGUMENT;
+				}else {
+					return delete(cmd[CMD_ARG]);
+				}
 			case SORT:
 				return sort();
 			case SEARCH:
-				return search(cmd_arg);
+				if (cmd.length == MISSING_ARG) {
+					return MESSAGE_INVALID_ARGUMENT;
+				}else {
+					return search(cmd[CMD_ARG]);
+				}
 			case INVALID:
 				return String.format(MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n");
 			case EXIT:
@@ -166,8 +182,7 @@ public class TextBuddy {
 	}
 	
 	private static String add(String cmd) {
-		String[] line = cmd.split(" ");
-		if ((line.length == INVALID_ARG_LENGTH) || (line[ACTUAL_STRING_CONTENT].equals(""))) {
+		if (cmd.trim().length() <= 0) {
 			return MESSAGE_INVALID_ARGUMENT;
 		} else {
 			entries.add(cmd);
@@ -185,16 +200,22 @@ public class TextBuddy {
 			if (entries.isEmpty()) {
 				return String.format(MESSAGE_EMPTY_FILE, fileName);
 			} else {
-				printDisplay();
+				return printDisplay();
 			}
+		} else{
+			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
 		}
-		return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
 	}
 
-	private static void printDisplay() {
+	private static String printDisplay() {
+		String output = "";
 		for (int i = 0; i < entries.size(); i++) {
-			System.out.println((i+1) + ". " + entries.get(i));
+			if (i > 0) {
+				output += "\n";
+			}
+			output += (i+1) + ". " + entries.get(i);
 		}
+		return output;
 	}
 
 	/**
@@ -261,8 +282,6 @@ public class TextBuddy {
 	}
 	
 	private static String search(String query) {
-		boolean found = false;
-		
 		if (textFile.exists()) {
 			if (entries.isEmpty()) {
 				return String.format(MESSAGE_FAIL_SEARCH, fileName);
@@ -276,11 +295,16 @@ public class TextBuddy {
 	}
 
 	private static String searchThruLines(String query) {
+		boolean found = false;
 		String foundInLine = String.format(MESSAGE_SUCCESS_SEARCH, query);		
 		for (int i = 0; i < entries.size(); i++) {
 			if (entries.get(i).contains(query)) {
 				foundInLine += (i + 1) + ". " + entries.get(i) + "\n";
+				found = true;
 			}
+		}
+		if (!found) {
+			return String.format(MESSAGE_FAIL_SEARCH, fileName);
 		}
 		return foundInLine;
 	}
