@@ -248,28 +248,20 @@ public class TextBuddy {
 	}
 	
 	private static String sort() {
-		if (textFile.exists()) {
-			if (entries.isEmpty()) {
-				return String.format(MESSAGE_EMPTY_FILE, fileName);
-			} else {
-				Collections.sort(entries);
-				return String.format(MESSAGE_SORTED, fileName);
-			}
+		if (entries.isEmpty()) {
+			return String.format(MESSAGE_EMPTY_FILE, fileName);
 		} else {
-			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
+			Collections.sort(entries);
+			return String.format(MESSAGE_SORTED, fileName);
 		}
 	}
 	
 	private static String search(String query) {
-		if (textFile.exists()) {
-			if (entries.isEmpty()) {
-				return String.format(MESSAGE_FAIL_SEARCH, fileName);
-			} else {
-				String foundInLine = searchThruLines(query);
-				return foundInLine;
-			}
+		if (entries.isEmpty()) {
+			return String.format(MESSAGE_FAIL_SEARCH, fileName);
 		} else {
-			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
+			String foundInLine = searchThruLines(query);
+			return foundInLine;
 		}
 	}
 
