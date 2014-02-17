@@ -206,12 +206,8 @@ public class TextBuddy {
 	 * as well as the text file by over-writing it with a whitespace.
 	 */
 	private static String clear() {
-		if (textFile.exists()) {
-			entries = new ArrayList<String>();
-			return String.format(MESSAGE_CLEARED, fileName);
-		} else {
-			return String.format(MESSAGE_ERROR_OPENING_FILE, fileName);
-		}
+		entries = new ArrayList<String>();
+		return String.format(MESSAGE_CLEARED, fileName);
 	}
 
 	/**
