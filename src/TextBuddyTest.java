@@ -14,5 +14,6 @@ public class TextBuddyTest {
 		assertEquals("Added to test.txt: \"test line 1\"", TextBuddy.executeCommand(cmd1));
 		assertEquals("Added to test.txt: \"abc 2\"", TextBuddy.executeCommand(cmd2));
 		assertEquals("test.txt is sorted.", TextBuddy.executeCommand("sort"));
+		assertEquals("Can't find \"bcd\" in test.txt", TextBuddy.executeCommand("search bcd"));
 	}
 }

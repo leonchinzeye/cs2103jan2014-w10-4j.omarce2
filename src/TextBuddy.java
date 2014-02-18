@@ -36,7 +36,7 @@ public class TextBuddy {
 	private static final String MESSAGE_EMPTY_FILE = "%s is empty.";
 	private static final String MESSAGE_NOTHING_TO_DELETE = "There is nothing to delete!";
 	private static final String MESSAGE_SORTED = "%s is sorted.";
-	private static final String MESSAGE_FAIL_SEARCH = "Can't find \"%s\" in file.";
+	private static final String MESSAGE_FAIL_SEARCH = "Can't find \"%s\" in %s.";
 	private static final String MESSAGE_SUCCESS_SEARCH = "Found \"%s\" in the lines:\n";
 	
 	private static final int MIN_ARG_LENGTH = 1;
@@ -266,7 +266,7 @@ public class TextBuddy {
 	
 	private static String search(String query) {
 		if (entries.isEmpty()) {
-			return String.format(MESSAGE_FAIL_SEARCH, fileName);
+			return String.format(MESSAGE_EMPTY_FILE, fileName);
 		} else {
 			String foundInLine = searchThruLines(query);
 			return foundInLine;
@@ -274,9 +274,9 @@ public class TextBuddy {
 	}
 
 	private static String searchThruLines(String query) {
-		int foundCounter = 0;
+		//boolean queryHasUpperCase = !query.equals(query.toLowerCase());
 		String queryLowerCase = query.toLowerCase();
-		boolean found = false;
+		int foundCounter = 0;
 		String foundInLine = String.format(MESSAGE_SUCCESS_SEARCH, query);		
 		for (int i = 0; i < entries.size(); i++) {
 			String entryLowerCase = entries.get(i).toLowerCase();
@@ -285,14 +285,11 @@ public class TextBuddy {
 					foundInLine += "\n";
 				}
 				foundInLine += (i + 1) + ". " + entries.get(i);
-				found = true;
-				if (found) {
-					foundCounter++;
-				}
+				foundCounter++;
 			}
 		}
-		if (!found) {
-			return String.format(MESSAGE_FAIL_SEARCH, query);
+		if (foundCounter == 0) {
+			return String.format(MESSAGE_FAIL_SEARCH, query, fileName);
 		}
 		return foundInLine;
 	}
