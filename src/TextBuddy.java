@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -75,7 +76,7 @@ public class TextBuddy {
 		}
 	}
 	
-	public static void output(String text) {
+	private static void output(String text) {
 		System.out.println(text);
 	}
 
@@ -120,13 +121,13 @@ public class TextBuddy {
 				response = executeSearchCmd(cmd);
 				break;
 			case INVALID:
-				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n";
+				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND;
 				break;
 			case EXIT:
 				System.exit(0);
 				break;
 			default:
-				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND + "\n";
+				response = MESSAGE_ERROR_UNRECOGNISABLE_COMMAND;
 				break;
 		}
 		return response;
@@ -258,7 +259,7 @@ public class TextBuddy {
 		if (entries.isEmpty()) {
 			return String.format(MESSAGE_EMPTY_FILE, fileName);
 		} else {
-			Collections.sort(entries);
+			Collections.sort(entries, new SortIgnoreCase());
 			return String.format(MESSAGE_SORTED, fileName);
 		}
 	}
@@ -273,16 +274,25 @@ public class TextBuddy {
 	}
 
 	private static String searchThruLines(String query) {
+		int foundCounter = 0;
+		String queryLowerCase = query.toLowerCase();
 		boolean found = false;
 		String foundInLine = String.format(MESSAGE_SUCCESS_SEARCH, query);		
 		for (int i = 0; i < entries.size(); i++) {
-			if (entries.get(i).contains(query)) {
-				foundInLine += (i + 1) + ". " + entries.get(i) + "\n";
+			String entryLowerCase = entries.get(i).toLowerCase();
+			if (entryLowerCase.contains(queryLowerCase)) {
+				if (foundCounter > 0) {
+					foundInLine += "\n";
+				}
+				foundInLine += (i + 1) + ". " + entries.get(i);
 				found = true;
+				if (found) {
+					foundCounter++;
+				}
 			}
 		}
 		if (!found) {
-			return String.format(MESSAGE_FAIL_SEARCH, fileName);
+			return String.format(MESSAGE_FAIL_SEARCH, query);
 		}
 		return foundInLine;
 	}
@@ -330,5 +340,13 @@ public class TextBuddy {
 		} catch (IOException ex) {
 			System.out.println(MESSAGE_ERROR_WRITING_TO_FILE);
 		}
+	}
+	
+	public static class SortIgnoreCase implements Comparator<Object> {
+	  public int compare(Object o1, Object o2) {
+	      String s1 = (String) o1;
+	      String s2 = (String) o2;
+	      return s1.toLowerCase().compareTo(s2.toLowerCase());
+	  }
 	}
 }
